@@ -8,7 +8,8 @@ namespace SkypeBot
     {
         Skype skype;
         String trigger = "!";
-        String nickname = "//JACKBOT\\\\ ";
+        String nickname = "";
+        Random rand = new Random();
 
         public Form1()
         {
@@ -45,17 +46,55 @@ namespace SkypeBot
                     lstBox.Items.Add(DateTime.Now.ToLongTimeString() + ":" + "command " + "'" + msg + "'" + " from " + pMessage.Sender.Handle);
                     msg = msg.Remove(0, 1).ToLower();
 
-                    if (msg == "jackbot")
-                    {
+                    if (msg == "jackbot") {
                         c.SendMessage(nickname + "Hello my good friend. Hope you have a jooday.");
-                    }else if (msg == "meme")
-                    {
+                    } else if (msg == "meme") {
                         c.SendMessage(nickname + "Meme I'm enjoying lately: https://www.youtube.com/watch?v=fK1N_vqJPac");
-                    }else if (msg == "dnd")
-                    {
+                    } else if (msg == "dnd") {
                         c.SendMessage(nickname + "D&D is scheduled for Saturday October 24th, sometime around 11pm.");
-                    } else
-                    {
+                    } else if (msg == "rock") {
+                        int num = rand.Next(0, 3); // 0 = rock; 1 = paper; 2 = scissors
+                        if (num == 0)
+                        {
+                            c.SendMessage(nickname + "I chose rock! We tie!");
+                        } else if (num == 1)
+                        {
+                            c.SendMessage(nickname + "I chose paper! I win!");
+                        } else
+                        {
+                            c.SendMessage(nickname + "I chose scissors! You win!");
+                        }
+                    } else if (msg == "paper") {
+                        int num = rand.Next(0, 3); // 0 = rock; 1 = paper; 2 = scissors
+                        if (num == 0)
+                        {
+                            c.SendMessage(nickname + "I chose rock! You win!");
+                        }
+                        else if (num == 1)
+                        {
+                            c.SendMessage(nickname + "I chose paper! We tie!");
+                        }
+                        else
+                        {
+                            c.SendMessage(nickname + "I chose scissors! I win!");
+                        }
+                    } else if (msg == "scissors") {
+                        int num = rand.Next(0, 3); // 0 = rock; 1 = paper; 2 = scissors
+                        if (num == 0)
+                        {
+                            c.SendMessage(nickname + "I chose rock! I win!");
+                        }
+                        else if (num == 1)
+                        {
+                            c.SendMessage(nickname + "I chose paper! You win!");
+                        }
+                        else
+                        {
+                            c.SendMessage(nickname + "I chose scissors! We tie!");
+                        }
+                    } else if (msg == "help") {
+                        c.SendMessage("Commands include !jackbot !meme !dnd !rock/paper/scissors");
+                    } else {
                         c.SendMessage(nickname + "I'm not sure what you want from me...");
                     }
                 }
