@@ -1,18 +1,50 @@
 ﻿using System;
+using System.Collections.Generic;
 using SKYPE4COMLib;
 using System.Windows.Forms;
+using System.IO;
 
 namespace SkypeBot
 {
     public partial class Form1 : Form
     {
         Skype skype;
-        String trigger = "!";
-        String nickname = "";
+        string trigger = "!";
+        string nickname = "";
         Random rand = new Random();
+        string winDir = System.Environment.GetEnvironmentVariable("windir");
+        Boolean scored = false;
+
+        StreamWriter writer;
+        StreamReader reader;
+
+        Dictionary<string, int> scoreboard = new Dictionary<string, int>();
 
         public Form1()
         {
+            if (File.Exists("C:\\Scoreboard.txt")) {
+                reader = new StreamReader("C:\\Scoreboard.txt");
+                try
+                {
+                    do
+                    {
+                        string tmp = reader.ReadLine();
+                        string[] words = tmp.Split(' ');
+                        string username = words[0];
+                        int score = Int32.Parse(words[1]);
+                        scoreboard.Add(username, score);
+                    }
+                    while (reader.Peek() != -1);
+                }
+                catch
+                {
+                    // empty
+                }
+                finally
+                {
+                    reader.Close();
+                }
+            } 
             InitializeComponent();
         }
 
@@ -27,19 +59,8 @@ namespace SkypeBot
         {
             if (Status == TChatMessageStatus.cmsReceived || Status == TChatMessageStatus.cmsSent)
             {
-                String msg = pMessage.Body;
+                string msg = pMessage.Body;
                 Chat c = pMessage.Chat;
-
-                /*if (pMessage.Sender.Handle == "eeshwan")
-                {
-                    c.SendMessage(nickname + "Memer detected...");
-                } else if (pMessage.Sender.Handle == "dalton.f7")
-                {
-                    c.SendMessage(nickname + "ooh a message from dalton-sama");
-                } else if (pMessage.Sender.Handle == "dream_3ater")
-                {
-                    c.SendMessage(nickname + "the creator...");
-                }*/
 
                 if (msg.StartsWith(trigger))
                 {
@@ -63,12 +84,14 @@ namespace SkypeBot
                         } else
                         {
                             c.SendMessage(nickname + "I chose scissors! You win!");
+                            scored = true;
                         }
                     } else if (msg == "paper") {
                         int num = rand.Next(0, 3); // 0 = rock; 1 = paper; 2 = scissors
                         if (num == 0)
                         {
                             c.SendMessage(nickname + "I chose rock! You win!");
+                            scored = true;
                         }
                         else if (num == 1)
                         {
@@ -87,6 +110,7 @@ namespace SkypeBot
                         else if (num == 1)
                         {
                             c.SendMessage(nickname + "I chose paper! You win!");
+                            scored = true;
                         }
                         else
                         {
@@ -94,8 +118,32 @@ namespace SkypeBot
                         }
                     } else if (msg == "help") {
                         c.SendMessage("Commands include !jackbot !meme !dnd !rock/paper/scissors");
-                    } else {
-                        c.SendMessage(nickname + "I'm not sure what you want from me...");
+                    } else if (msg == "quit") {
+                        c.SendMessage("*beep boop* Exiting... (saving scores)");
+                        writer = new StreamWriter("C:\\Scoreboard.txt");
+                        foreach (KeyValuePair<string, int> pair in scoreboard)
+                        {
+                            writer.WriteLine(pair.Key + " " + pair.Value);
+                        }
+                        writer.Close();
+                        System.Environment.Exit(1);
+                    } else if (msg == "scores") {
+                        string txtScores = "";
+                        foreach (KeyValuePair<string, int> pair in scoreboard)
+                        {
+                            txtScores += (pair.Key + ": " + pair.Value + "\n");
+                        }
+                        c.SendMessage(txtScores);
+                    }
+                    if (scored == true)
+                    {
+                        if (scoreboard.ContainsKey(pMessage.Sender.Handle))
+                        {
+                            scoreboard[pMessage.Sender.Handle] += 1;
+                        } else {
+                            scoreboard.Add(pMessage.Sender.Handle, 1);
+                        }
+                        scored = false;
                     }
                 }
             }
