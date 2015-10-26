@@ -10,10 +10,12 @@ namespace SkypeBot
     {
         Skype skype;
         string trigger = "!";
-        string nickname = "";
+        string admin = "dream_3ater"; // change value here for admin rights
+
         Random rand = new Random();
-        string winDir = System.Environment.GetEnvironmentVariable("windir");
-        Boolean scored = false;
+        Boolean RPS = false;
+        Boolean win = false;
+        Boolean loss = false;
 
         StreamWriter writer;
         StreamReader reader;
@@ -68,57 +70,67 @@ namespace SkypeBot
                     msg = msg.Remove(0, 1).ToLower();
 
                     if (msg == "jackbot") {
-                        c.SendMessage(nickname + "Hello my good friend. Hope you have a jooday.");
+                        c.SendMessage("Hello my good friend. Hope you have a jooday.");
                     } else if (msg == "meme") {
-                        c.SendMessage(nickname + "Meme I'm enjoying lately: https://www.youtube.com/watch?v=fK1N_vqJPac");
+                        c.SendMessage("Meme I'm enjoying lately: https://www.youtube.com/watch?v=fK1N_vqJPac");
                     } else if (msg == "dnd") {
-                        c.SendMessage(nickname + "D&D is scheduled for Saturday October 24th, sometime around 11pm.");
+                        c.SendMessage("D&D is scheduled for Saturday October 24th, sometime around 11pm.");
                     } else if (msg == "rock") {
+                        RPS = true;
                         int num = rand.Next(0, 3); // 0 = rock; 1 = paper; 2 = scissors
                         if (num == 0)
                         {
-                            c.SendMessage(nickname + "I chose rock! We tie!");
+                            c.SendMessage("I chose rock! We tie!");
                         } else if (num == 1)
                         {
-                            c.SendMessage(nickname + "I chose paper! I win!");
+                            c.SendMessage("I chose paper! I win! (-1 score)");
+                            loss = true;
                         } else
                         {
-                            c.SendMessage(nickname + "I chose scissors! You win!");
-                            scored = true;
+                            c.SendMessage("I chose scissors! You win! (+1 score)");
+                            win = true;
                         }
                     } else if (msg == "paper") {
+                        RPS = true;
                         int num = rand.Next(0, 3); // 0 = rock; 1 = paper; 2 = scissors
                         if (num == 0)
                         {
-                            c.SendMessage(nickname + "I chose rock! You win!");
-                            scored = true;
+                            c.SendMessage("I chose rock! You win! (+1 score)");
+                            win = true;
                         }
                         else if (num == 1)
                         {
-                            c.SendMessage(nickname + "I chose paper! We tie!");
+                            c.SendMessage("I chose paper! We tie!");
                         }
                         else
                         {
-                            c.SendMessage(nickname + "I chose scissors! I win!");
+                            c.SendMessage("I chose scissors! I win! (-1 score)");
+                            loss = true;
                         }
                     } else if (msg == "scissors") {
+                        RPS = true;
                         int num = rand.Next(0, 3); // 0 = rock; 1 = paper; 2 = scissors
                         if (num == 0)
                         {
-                            c.SendMessage(nickname + "I chose rock! I win!");
+                            c.SendMessage("I chose rock! I win! (-1 score)");
+                            loss = true;
                         }
                         else if (num == 1)
                         {
-                            c.SendMessage(nickname + "I chose paper! You win!");
-                            scored = true;
+                            c.SendMessage("I chose paper! You win! (+1 score)");
+                            win = true;
                         }
                         else
                         {
-                            c.SendMessage(nickname + "I chose scissors! We tie!");
+                            c.SendMessage("I chose scissors! We tie!");
                         }
                     } else if (msg == "help") {
-                        c.SendMessage("Commands include !jackbot !meme !dnd !rock/paper/scissors");
-                    } else if (msg == "quit") {
+                        c.SendMessage("Commands include !jackbot !meme !dnd !rock/paper/scissors !spam");
+                    } else if (msg == "spam") {
+                        c.SendMessage("Sorry for someone spamming me :( I promise it's not my fault...");
+                    } else if (msg == "fk alec") {
+                        c.SendMessage("Fk alec");
+                    } else if (msg == "quit" && pMessage.Sender.Handle == admin) {
                         c.SendMessage("*beep boop* Exiting... (saving scores)");
                         writer = new StreamWriter("C:\\Scoreboard.txt");
                         foreach (KeyValuePair<string, int> pair in scoreboard)
@@ -135,15 +147,27 @@ namespace SkypeBot
                         }
                         c.SendMessage(txtScores);
                     }
-                    if (scored == true)
+                    if (RPS == true)
                     {
-                        if (scoreboard.ContainsKey(pMessage.Sender.Handle))
+                        if (!scoreboard.ContainsKey(pMessage.Sender.Handle))
+                        {
+                            scoreboard.Add(pMessage.Sender.Handle, 0);
+                        }
+                        if (win == true)
                         {
                             scoreboard[pMessage.Sender.Handle] += 1;
-                        } else {
-                            scoreboard.Add(pMessage.Sender.Handle, 1);
                         }
-                        scored = false;
+                        else if (loss == true)
+                        {
+                            scoreboard[pMessage.Sender.Handle] -= 1;
+                            if (scoreboard[pMessage.Sender.Handle] == -1)
+                            {
+                                scoreboard[pMessage.Sender.Handle] = 0;
+                            }
+                        }
+                        RPS = false;
+                        win = false;
+                        loss = false;
                     }
                 }
             }
