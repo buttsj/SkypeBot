@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using SKYPE4COMLib;
 using System.Windows.Forms;
@@ -10,6 +11,7 @@ namespace SkypeBot
     {
         Skype skype;
         string trigger = "!";
+        string urlTrigger = "http";
         string admin = "dream_3ater"; // change value here for admin rights
 
         Random rand = new Random();
@@ -17,26 +19,29 @@ namespace SkypeBot
         Boolean win = false;
         Boolean loss = false;
 
-        StreamWriter writer;
-        StreamReader reader;
+        StreamWriter linksWriter;
+        StreamWriter scoreWriter;
+        StreamReader scoreReader;
+        StreamReader linksReader;
 
         Dictionary<string, int> scoreboard = new Dictionary<string, int>();
+        ArrayList links = new ArrayList();
 
         public Form1()
         {
             if (File.Exists("C:\\Scoreboard.txt")) {
-                reader = new StreamReader("C:\\Scoreboard.txt");
+                scoreReader = new StreamReader("C:\\Scoreboard.txt");
                 try
                 {
                     do
                     {
-                        string tmp = reader.ReadLine();
+                        string tmp = scoreReader.ReadLine();
                         string[] words = tmp.Split(' ');
                         string username = words[0];
                         int score = Int32.Parse(words[1]);
                         scoreboard.Add(username, score);
                     }
-                    while (reader.Peek() != -1);
+                    while (scoreReader.Peek() != -1);
                 }
                 catch
                 {
@@ -44,9 +49,30 @@ namespace SkypeBot
                 }
                 finally
                 {
-                    reader.Close();
+                    scoreReader.Close();
                 }
-            } 
+            }
+            if (File.Exists("C:\\Links.txt"))
+            {
+                linksReader = new StreamReader("C:\\Links.txt");
+                try
+                {
+                    do
+                    {
+                        string tmp = linksReader.ReadLine();
+                        links.Add(tmp);
+                    }
+                    while (linksReader.Peek() != -1);
+                }
+                catch
+                {
+                    // empty
+                }
+                finally
+                {
+                    linksReader.Close();
+                }
+            }
             InitializeComponent();
         }
 
@@ -74,7 +100,7 @@ namespace SkypeBot
                     } else if (msg == "meme") {
                         c.SendMessage("Meme I'm enjoying lately: https://www.youtube.com/watch?v=fK1N_vqJPac");
                     } else if (msg == "dnd") {
-                        c.SendMessage("D&D is scheduled for Saturday October 24th, sometime around 11pm.");
+                        c.SendMessage("D&D is scheduled for Sunday November 1st, sometime around 1pm.");
                     } else if (msg == "rock") {
                         RPS = true;
                         int num = rand.Next(0, 3); // 0 = rock; 1 = paper; 2 = scissors
@@ -132,12 +158,19 @@ namespace SkypeBot
                         c.SendMessage("Fk alec");
                     } else if (msg == "quit" && pMessage.Sender.Handle == admin) {
                         c.SendMessage("*beep boop* Exiting... (saving scores)");
-                        writer = new StreamWriter("C:\\Scoreboard.txt");
+                        scoreWriter = new StreamWriter("C:\\Scoreboard.txt");
                         foreach (KeyValuePair<string, int> pair in scoreboard)
                         {
-                            writer.WriteLine(pair.Key + " " + pair.Value);
+                            scoreWriter.WriteLine(pair.Key + " " + pair.Value);
                         }
-                        writer.Close();
+                        scoreWriter.Close();
+
+                        linksWriter = new StreamWriter("C:\\Links.txt");
+                        foreach (string s in links)
+                        {
+                            linksWriter.WriteLine(s);
+                        }
+                        linksWriter.Close();
                         System.Environment.Exit(1);
                     } else if (msg == "scores") {
                         string txtScores = "";
@@ -146,6 +179,14 @@ namespace SkypeBot
                             txtScores += (pair.Key + ": " + pair.Value + "\n");
                         }
                         c.SendMessage(txtScores);
+                    } else if (msg == "links")
+                    {
+                        string concat = "";
+                        foreach (string s in links)
+                        {
+                            concat = concat + s + "\n";
+                        }
+                        c.SendMessage(concat);
                     }
                     if (RPS == true)
                     {
@@ -168,6 +209,13 @@ namespace SkypeBot
                         RPS = false;
                         win = false;
                         loss = false;
+                    }
+                }
+                else if (msg.StartsWith(urlTrigger))
+                {
+                    if (pMessage.Sender.Handle != "jackles.bot")
+                    {
+                        links.Add(msg);
                     }
                 }
             }
